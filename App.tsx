@@ -12,6 +12,9 @@ import CartScreen from './src/screens/CartScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import AccountScreen from './src/screens/AccountScreen';
 import SectionScreen from './src/screens/SectionScreen';
+import BlogScreen from './src/screens/BlogScreen';
+import BlogDetailScreen from './src/screens/BlogDetailScreen';
+import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import colors from './src/theme/colors';
 
@@ -25,6 +28,8 @@ export type RootStackParamList = {
   Vet: undefined;
   Phr: undefined;
   Parser: undefined;
+  BlogDetail: { blogId: string };
+  ProductDetail: { itemId: string };
   // Payments: undefined;
 };
 
@@ -48,7 +53,9 @@ export default function App() {
             <Stack.Screen name="Cart" component={CartScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Account" component={AccountScreen} />
-            <Stack.Screen name="Blog" component={SectionScreen} initialParams={{ title: 'Blog' }} />
+            <Stack.Screen name="Blog" component={BlogScreen} />
+            <Stack.Screen name="BlogDetail" component={BlogDetailScreen} />
+            <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
             <Stack.Screen name="Vet" component={SectionScreen} initialParams={{ title: 'Consult a Vet' }} />
             <Stack.Screen name="Phr" component={SectionScreen} initialParams={{ title: 'Patient PHR' }} />
             <Stack.Screen name="Parser" component={SectionScreen} initialParams={{ title: 'Q&A' }} />

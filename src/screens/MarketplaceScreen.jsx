@@ -15,7 +15,7 @@ import colors from '../theme/colors';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 import ProductCard from '../components/ProductCard';
-import { fetchProducts, addToCart } from '../services/api';
+import { fetchProducts, addToCart } from '../services/api_essentials';
 
 export default function MarketplaceScreen({ navigation }) {
   const [products, setProducts] = useState([]);
@@ -93,6 +93,7 @@ export default function MarketplaceScreen({ navigation }) {
             <ProductCard
               product={item}
               onAddToCart={handleAddToCart}
+              onViewDetails={(itemId) => navigation.navigate('ProductDetail', { itemId })}
               adding={addingId === item._id}
             />
           )}

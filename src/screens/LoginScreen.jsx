@@ -22,7 +22,7 @@ import { Eye, EyeOff } from 'lucide-react-native';
 import Logo from '../components/Logo';
 import BottomNav from '../components/BottomNav';
 import colors from '../theme/colors';
-import api, { BASE_URL } from '../services/api';
+import api, { BASE_URL } from '../services/api_essentials';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }) {

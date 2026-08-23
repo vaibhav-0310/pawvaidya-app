@@ -8,7 +8,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../services/api';
+import api from '../services/api_essentials';
 
 const AuthContext = createContext(null);
 

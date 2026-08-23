@@ -18,7 +18,7 @@ import { Trash2 } from 'lucide-react-native';
 import colors from '../theme/colors';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
-import api from '../services/api';
+import api from '../services/api_essentials';
 
 function parsePrice(price) {
   const num = typeof price === 'string' ? parseFloat(price.replace('₹', '').replace('$', '')) : parseFloat(price);

@@ -9,11 +9,11 @@ import colors from '../theme/colors';
  * @param {function} onAddToCart - called with product._id
  * @param {boolean} adding - shows loading spinner on the button while cart request is in flight
  */
-export default function ProductCard({ product, onAddToCart, adding }) {
+export default function ProductCard({ product, onAddToCart, onViewDetails, adding }) {
   const { name, price, suitableFor, imageUrl } = product;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => onViewDetails?.(product._id)} activeOpacity={0.9}>
       <Image
         source={{ uri: imageUrl }}
         style={styles.image}
@@ -40,7 +40,7 @@ export default function ProductCard({ product, onAddToCart, adding }) {
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
