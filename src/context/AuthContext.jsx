@@ -56,12 +56,12 @@ export function AuthProvider({ children }) {
       await api.get('/logout');
     } catch (err) {
       // ignore network errors on logout — clear local state regardless
+    } finally {
+      await AsyncStorage.multiRemove([SESSION_COOKIE_KEY, AUTH_USER_KEY, AUTH_TYPE_KEY]);
+      setUser(null);
+      setUserType(null);
+      setIsAuthenticated(false);
     }
-    await AsyncStorage.removeItem(SESSION_COOKIE_KEY);
-    await AsyncStorage.multiRemove([AUTH_USER_KEY, AUTH_TYPE_KEY]);
-    setUser(null);
-    setUserType(null);
-    setIsAuthenticated(false);
   };
 
   return (

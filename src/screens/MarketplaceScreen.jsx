@@ -8,12 +8,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  Alert,
   Pressable,
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, X } from 'lucide-react-native';
+import { CheckCircle, Search, ShoppingCart, X, XCircle } from 'lucide-react-native';
 import colors from '../theme/colors';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
@@ -60,6 +59,7 @@ export default function MarketplaceScreen({ navigation }) {
   const [addingId, setAddingId] = useState(null);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [feedback, setFeedback] = useState(null);
 
   const loadProducts = useCallback(async (isRefresh = false) => {
     try {
@@ -88,9 +88,11 @@ export default function MarketplaceScreen({ navigation }) {
     setAddingId(product._id);
     try {
       await addToCart(product);
-      Alert.alert('Added', `${product.name} added to cart.`);
+      setFeedback({ type: 'success', text: `${product.name} added to cart.` });
+      setTimeout(() => setFeedback(null), 3500);
     } catch (err) {
-      Alert.alert('Error', 'Could not add item to cart. Please try again.');
+      setFeedback({ type: 'error', text: 'Could not add item to cart. Please try again.' });
+      setTimeout(() => setFeedback(null), 4000);
     } finally {
       setAddingId(null);
     }
@@ -148,6 +150,18 @@ export default function MarketplaceScreen({ navigation }) {
           }
         />
       )}
+      {feedback ? (
+        <View style={styles.feedbackBanner}>
+          {feedback.type === 'success' ? <CheckCircle size={21} color="#257A49" /> : <XCircle size={21} color="#A13737" />}
+          <Text style={styles.feedbackText}>{feedback.text}</Text>
+          {feedback.type === 'success' ? (
+            <Pressable style={styles.feedbackAction} onPress={() => navigation.navigate('Cart')}>
+              <ShoppingCart size={16} color={colors.primaryDark} />
+              <Text style={styles.feedbackActionText}>View cart</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
       <BottomNav navigation={navigation} activeScreen="Marketplace" />
     </SafeAreaView>
   );
@@ -224,4 +238,25 @@ const styles = StyleSheet.create({
     color: '#C0392B',
     fontSize: 14,
   },
+  feedbackBanner: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 76,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: 14,
+    padding: 13,
+    shadowColor: '#000000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 5,
+  },
+  feedbackText: { flex: 1, color: colors.textPrimary, fontSize: 13, marginHorizontal: 9 },
+  feedbackAction: { flexDirection: 'row', alignItems: 'center', gap: 5, borderLeftWidth: 1, borderLeftColor: colors.cardBorder, paddingLeft: 10 },
+  feedbackActionText: { color: colors.primaryDark, fontSize: 12, fontWeight: '800' },
 });

@@ -16,6 +16,7 @@ import { ArrowLeft, Banknote, CreditCard, ShieldCheck } from 'lucide-react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../theme/colors';
 import api from '../services/api_essentials';
+import FeedbackBanner from '../components/FeedbackBanner';
 
 const RAZORPAY_KEY_ID = 'rzp_test_SZsyevxtPByPrh';
 
@@ -50,6 +51,8 @@ export default function PaymentsScreen({ navigation }) {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const submitLock = useRef(false);
+  const [feedback, setFeedback] = useState(null);
+  const dismissFeedback = useCallback(() => setFeedback(null), []);
 
   const totalAmount = cartItems.reduce(
     (sum, item) => sum + parsePrice(item.price) * parseQuantity(item.quantity),
@@ -96,9 +99,7 @@ export default function PaymentsScreen({ navigation }) {
   const finishOrder = async () => {
     await api.delete('/cart/deleteall');
     setCartItems([]);
-    Alert.alert('Order placed', 'Your order has been confirmed.', [
-      { text: 'View orders', onPress: () => navigation.navigate('Orders') },
-    ]);
+    setFeedback({ type: 'success', message: 'Your order has been confirmed.' });
   };
 
   const payWithRazorpay = async () => {
@@ -159,14 +160,14 @@ export default function PaymentsScreen({ navigation }) {
     if (submitLock.current) return;
 
     if (!validate()) {
-      Alert.alert('Check your details', 'Please complete the highlighted fields.');
+      setFeedback({ type: 'warning', message: 'Please complete the highlighted fields.' });
       return;
     }
     // FIX: guard against a zero/invalid total, not just an empty cart array.
     // This catches the case where items exist but their price/quantity
     // fields didn't parse (e.g. mismatched field names from the API).
     if (!cartItems.length || totalAmount <= 0) {
-      Alert.alert('Cart is empty', 'Add an item before placing an order.');
+      setFeedback({ type: 'warning', message: 'Add an item before placing an order.' });
       return;
     }
 
@@ -200,7 +201,7 @@ export default function PaymentsScreen({ navigation }) {
 
       if (error?.code !== 0 && error?.description !== 'Payment cancelled') {
         const backendMessage = error?.response?.data?.error || error?.response?.data?.message;
-        Alert.alert('Payment failed', backendMessage || error?.description || error?.message || 'Please try again.');
+        setFeedback({ type: 'error', message: backendMessage || error?.description || error?.message || 'Please try again.' });
       }
     } finally {
       submitLock.current = false;
@@ -297,6 +298,7 @@ export default function PaymentsScreen({ navigation }) {
         <View style={styles.security}><ShieldCheck size={16} color={colors.primaryAccent} /><Text style={styles.securityText}>Secure checkout powered by Razorpay</Text></View>
         </ScrollView>
       </KeyboardAvoidingView>
+      {feedback ? <FeedbackBanner type={feedback.type} message={feedback.message} actionLabel="View orders" onAction={() => navigation.navigate('Orders')} onDismiss={dismissFeedback} /> : null}
     </SafeAreaView>
   );
 }

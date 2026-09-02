@@ -21,6 +21,7 @@ import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import PaymentsScreen from './src/screens/PaymentsScreen';
 import OrdersScreen from './src/screens/OrdersScreen';
 import PhrScreen from './src/screens/PhrScreen';
+import ParserScreen from './src/screens/ParserScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import colors from './src/theme/colors';
 
@@ -71,7 +72,7 @@ export default function App() {
             <Stack.Screen name="VetChat" component={VetChatScreen} />
             <Stack.Screen name="VetCall" component={VetCallScreen} />
             <Stack.Screen name="Phr" component={PhrScreen} />
-            <Stack.Screen name="Parser" component={SectionScreen} initialParams={{ title: 'Q&A' }} />
+            <Stack.Screen name="Parser" component={ParserScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>

@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { errorCodes, isErrorWithCode, pick, types } from '@react-native-documents/picker';
+import { errorCodes, isErrorWithCode, keepLocalCopy, pick, types } from '@react-native-documents/picker';
 import { CheckCircle, ChevronRight, FileText, RefreshCw, Upload, XCircle } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../theme/colors';
@@ -74,7 +74,18 @@ export default function PhrScreen({ navigation }) {
   const chooseFile = async () => {
     try {
       const [selected] = await pick({ type: supportedTypes, allowMultiSelection: false });
-      setFile(selected);
+      let localUri = selected.uri;
+      try {
+        const [copy] = await keepLocalCopy({
+          files: [{ uri: selected.uri, fileName: selected.name || 'medical-document' }],
+          destination: 'cachesDirectory',
+        });
+        if (copy.status === 'success' && copy.localUri) localUri = copy.localUri;
+      } catch (copyError) {
+        // Some providers do not support copying; the original content URI can still be uploaded.
+      }
+      const fileWithLocalUri = { ...selected, uri: localUri };
+      setFile(fileWithLocalUri);
       setTitle((current) => current.trim() || titleFromName(selected.name));
       setMessage(null);
     } catch (error) {
@@ -110,7 +121,8 @@ export default function PhrScreen({ navigation }) {
       setMessage({ type: 'success', text: 'File uploaded successfully.' });
       await fetchPhrs(true);
     } catch (error) {
-      setMessage({ type: 'error', text: error?.response?.data?.error || 'File upload failed. Please try again.' });
+      const detail = error?.response?.data?.error || error?.response?.data?.message;
+      setMessage({ type: 'error', text: detail || error?.message || 'File upload failed. Please try again.' });
     } finally {
       setUploading(false);
     }

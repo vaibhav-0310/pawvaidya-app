@@ -9,11 +9,19 @@ import { useAuth } from '../context/AuthContext';
 
 export default function AccountScreen({ navigation }) {
   const { user, isAuthenticated, initializing, logout } = useAuth();
+  const [loggingOut, setLoggingOut] = React.useState(false);
 
   const displayName = user?.name || user?.username || user?.email || 'Pet parent';
 
   const handleLogout = async () => {
-    await logout();
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await logout();
+      navigation?.reset?.({ index: 0, routes: [{ name: 'Login' }] });
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -50,9 +58,9 @@ export default function AccountScreen({ navigation }) {
               <Stethoscope size={20} color={colors.primaryDark} />
               <Text style={styles.secondaryActionText}>Consult a vet</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutAction} onPress={handleLogout}>
-              <LogOut size={19} color={colors.accentPink} />
-              <Text style={styles.logoutText}>Log out</Text>
+            <TouchableOpacity style={styles.logoutAction} onPress={handleLogout} disabled={loggingOut}>
+              {loggingOut ? <ActivityIndicator size="small" color={colors.accentPink} /> : <LogOut size={19} color={colors.accentPink} />}
+              <Text style={styles.logoutText}>{loggingOut ? 'Logging out...' : 'Log out'}</Text>
             </TouchableOpacity>
           </>
         ) : (

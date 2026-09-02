@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CheckCircle, ShoppingCart, XCircle } from 'lucide-react-native';
 import colors from '../theme/colors';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
@@ -12,6 +13,7 @@ export default function ProductDetailScreen({ navigation, route }) {
   const [adding, setAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState(null);
+  const [feedback, setFeedback] = useState(null);
   const itemId = route?.params?.itemId;
 
   const loadProduct = useCallback(async () => {
@@ -32,9 +34,11 @@ export default function ProductDetailScreen({ navigation, route }) {
     setAdding(true);
     try {
       for (let count = 0; count < quantity; count += 1) await addToCart(product);
-      Alert.alert('Added', `${product.name} added to cart.`);
+      setFeedback({ type: 'success', text: `${product.name} added to cart.` });
+      setTimeout(() => setFeedback(null), 3500);
     } catch (requestError) {
-      Alert.alert('Error', 'Could not add item to cart. Please try again.');
+      setFeedback({ type: 'error', text: 'Could not add item to cart. Please try again.' });
+      setTimeout(() => setFeedback(null), 4000);
     } finally {
       setAdding(false);
     }
@@ -67,6 +71,18 @@ export default function ProductDetailScreen({ navigation, route }) {
           ) : <Text style={styles.error}>Product not found.</Text>}
         </ScrollView>
       )}
+      {feedback ? (
+        <View style={styles.feedbackBanner}>
+          {feedback.type === 'success' ? <CheckCircle size={21} color="#257A49" /> : <XCircle size={21} color="#A13737" />}
+          <Text style={styles.feedbackText}>{feedback.text}</Text>
+          {feedback.type === 'success' ? (
+            <Pressable style={styles.feedbackAction} onPress={() => navigation.navigate('Cart')}>
+              <ShoppingCart size={16} color={colors.primaryDark} />
+              <Text style={styles.feedbackActionText}>View cart</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
       <BottomNav navigation={navigation} activeScreen="Marketplace" />
     </SafeAreaView>
   );
@@ -93,4 +109,8 @@ const styles = StyleSheet.create({
   button: { backgroundColor: colors.buttonBg, borderRadius: 26, alignItems: 'center', justifyContent: 'center', paddingVertical: 15, marginTop: 26 },
   buttonText: { color: colors.buttonText, fontSize: 16, fontWeight: '700' },
   error: { color: '#C0392B', fontSize: 15, marginTop: 24 },
+  feedbackBanner: { position: 'absolute', left: 16, right: 16, bottom: 76, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 13, shadowColor: '#000000', shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 5 },
+  feedbackText: { flex: 1, color: colors.textPrimary, fontSize: 13, marginHorizontal: 9 },
+  feedbackAction: { flexDirection: 'row', alignItems: 'center', gap: 5, borderLeftWidth: 1, borderLeftColor: colors.cardBorder, paddingLeft: 10 },
+  feedbackActionText: { color: colors.primaryDark, fontSize: 12, fontWeight: '800' },
 });

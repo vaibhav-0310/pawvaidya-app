@@ -3,7 +3,7 @@
 // OTP -> login. Uses SafeAreaView + KeyboardAvoidingView so the form never
 // sits under the notch/status bar or gets hidden behind the keyboard.
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,13 +23,16 @@ import BottomNav from '../components/BottomNav';
 import colors from '../theme/colors';
 import api, { BASE_URL } from '../services/api_essentials';
 import { useAuth } from '../context/AuthContext';
+import FeedbackBanner from '../components/FeedbackBanner';
 
 export default function LoginScreen({ navigation }) {
   const [form, setForm] = useState({ username: '', password: '', otp: '' });
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   const { login } = useAuth();
+  const dismissFeedback = useCallback(() => setFeedback(null), []);
 
   const handleInput = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -45,19 +47,16 @@ export default function LoginScreen({ navigation }) {
 
   const handleSendOtp = async () => {
     if (!form.username || !form.password) {
-      Alert.alert('Missing info', 'Please fill in all fields');
+      setFeedback({ type: 'warning', message: 'Please fill in your username and password.' });
       return;
     }
     setLoading(true);
     try {
       await api.post('/send-otp', { username: form.username });
       setOtpSent(true);
-      Alert.alert('OTP sent', 'Check your registered email/phone for the OTP.');
+      setFeedback({ type: 'success', message: 'OTP sent. Check your registered email or phone.' });
     } catch (err) {
-      Alert.alert(
-        'Error',
-        err.response?.data?.message || err.response?.data?.error || 'Failed to send OTP'
-      );
+      setFeedback({ type: 'error', message: err.response?.data?.message || err.response?.data?.error || 'Failed to send OTP.' });
     } finally {
       setLoading(false);
     }
@@ -82,10 +81,7 @@ export default function LoginScreen({ navigation }) {
 
       navigation?.navigate?.('Home');
     } catch (err) {
-      Alert.alert(
-        'Login failed',
-        err.response?.data?.error || err.response?.data?.message || err.message || 'Login failed'
-      );
+      setFeedback({ type: 'error', message: err.response?.data?.error || err.response?.data?.message || err.message || 'Login failed.' });
     } finally {
       setLoading(false);
     }
@@ -96,7 +92,7 @@ export default function LoginScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
@@ -193,6 +189,7 @@ export default function LoginScreen({ navigation }) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      {feedback ? <FeedbackBanner type={feedback.type} message={feedback.message} onDismiss={dismissFeedback} /> : null}
       <BottomNav navigation={navigation} activeScreen="Login" />
     </SafeAreaView>
   );
@@ -202,6 +199,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
