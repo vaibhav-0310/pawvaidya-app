@@ -12,9 +12,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
 } from 'react-native';
 import { Trash2 } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../theme/colors';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';

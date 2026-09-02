@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { HeartPulse, LogIn, LogOut, ShoppingCart, Stethoscope } from 'lucide-react-native';
+import { HeartPulse, LogIn, LogOut, Package, ShoppingCart, Stethoscope } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../theme/colors';
 import Header from '../components/Header';
@@ -41,6 +41,10 @@ export default function AccountScreen({ navigation }) {
             <TouchableOpacity style={styles.action} onPress={() => navigation?.navigate?.('Cart')}>
               <ShoppingCart size={20} color={colors.buttonText} />
               <Text style={styles.actionText}>Open cart</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryAction} onPress={() => navigation?.navigate?.('Orders')}>
+              <Package size={20} color={colors.primaryDark} />
+              <Text style={styles.secondaryActionText}>My orders</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryAction} onPress={() => navigation?.navigate?.('Vet')}>
               <Stethoscope size={20} color={colors.primaryDark} />

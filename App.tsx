@@ -18,6 +18,8 @@ import VetChatScreen from './src/screens/VetChatScreen';
 import VetCallScreen from './src/screens/VetCallScreen';
 import BlogDetailScreen from './src/screens/BlogDetailScreen';
 import ProductDetailScreen from './src/screens/ProductDetailScreen';
+import PaymentsScreen from './src/screens/PaymentsScreen';
+import OrdersScreen from './src/screens/OrdersScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import colors from './src/theme/colors';
 
@@ -35,7 +37,8 @@ export type RootStackParamList = {
   Parser: undefined;
   BlogDetail: { blogId: string };
   ProductDetail: { itemId: string };
-  // Payments: undefined;
+  Payments: undefined;
+  Orders: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -61,6 +64,8 @@ export default function App() {
             <Stack.Screen name="Blog" component={BlogScreen} />
             <Stack.Screen name="BlogDetail" component={BlogDetailScreen} />
             <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+            <Stack.Screen name="Payments" component={PaymentsScreen} />
+            <Stack.Screen name="Orders" component={OrdersScreen} />
             <Stack.Screen name="Vet" component={VetScreen} />
             <Stack.Screen name="VetChat" component={VetChatScreen} />
             <Stack.Screen name="VetCall" component={VetCallScreen} />
