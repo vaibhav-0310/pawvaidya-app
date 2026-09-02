@@ -1,16 +1,14 @@
 // src/context/AuthContext.jsx
-// Mirrors the web app's AuthContext (isAuthenticated, user, userType, logout,
-// checkAuthStatus). On mobile, session cookies from `withCredentials: true`
-// don't persist the way they do in a browser — this stores a bearer token in
-// AsyncStorage instead. This ONLY works if your backend's /api/login route
-// also returns a token in the response body. If it currently only sets a
-// cookie, add token issuance server-side (e.g. a JWT) for this to work fully.
+// Mirrors the web app's session-based authentication flow for React Native.
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api_essentials';
 
 const AuthContext = createContext(null);
+const SESSION_COOKIE_KEY = 'pawvaidya.sessionCookie';
+const AUTH_USER_KEY = 'pawvaidya.authUser';
+const AUTH_TYPE_KEY = 'pawvaidya.authType';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -20,18 +18,14 @@ export function AuthProvider({ children }) {
 
   const checkAuthStatus = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      if (!token) {
-        setIsAuthenticated(false);
-        setUser(null);
-        setUserType(null);
-        return;
+      const storedUser = await AsyncStorage.getItem(AUTH_USER_KEY);
+      const storedType = await AsyncStorage.getItem(AUTH_TYPE_KEY);
+
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+        setUserType(storedType || null);
+        setIsAuthenticated(true);
       }
-      // TODO: confirm actual "who am I" endpoint on your backend (e.g. /api/me)
-      const { data } = await api.get('/me');
-      setUser(data.user || data);
-      setUserType(data.userType || data.role);
-      setIsAuthenticated(true);
     } catch (err) {
       setIsAuthenticated(false);
       setUser(null);
@@ -45,22 +39,26 @@ export function AuthProvider({ children }) {
     checkAuthStatus();
   }, [checkAuthStatus]);
 
-  const login = async ({ token, user: loggedInUser, userType: type }) => {
-    if (token) {
-      await AsyncStorage.setItem('authToken', token);
+  const login = async ({ user: loggedInUser, userType: type }) => {
+    if (!loggedInUser) {
+      throw new Error('Login succeeded, but the server did not return the user details.');
     }
-    setUser(loggedInUser || null);
+
+    await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(loggedInUser));
+    if (type) await AsyncStorage.setItem(AUTH_TYPE_KEY, type);
+    setUser(loggedInUser);
     setUserType(type || null);
     setIsAuthenticated(true);
   };
 
   const logout = async () => {
     try {
-      await api.post('/logout');
+      await api.get('/logout');
     } catch (err) {
       // ignore network errors on logout — clear local state regardless
     }
-    await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem(SESSION_COOKIE_KEY);
+    await AsyncStorage.multiRemove([AUTH_USER_KEY, AUTH_TYPE_KEY]);
     setUser(null);
     setUserType(null);
     setIsAuthenticated(false);

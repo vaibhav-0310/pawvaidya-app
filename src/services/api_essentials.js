@@ -6,26 +6,38 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const BASE_URL = 'https://pawvaidya-jgei.onrender.com/api';
+const SESSION_COOKIE_KEY = 'pawvaidya.sessionCookie';
 
 const api_essentials = axios.create({
   baseURL: BASE_URL,
   timeout: 60000, // Render free tier cold starts can take 30-60s
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Attach auth token (if user/vet is logged in) to every request
-// api_essentials.interceptors.request.use(async (config) => {
-//   const token = await AsyncStorage.getItem('authToken');
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
+api_essentials.interceptors.request.use(async (config) => {
+  const sessionCookie = await AsyncStorage.getItem(SESSION_COOKIE_KEY);
+  if (sessionCookie) {
+    config.headers = config.headers || {};
+    config.headers.Cookie = sessionCookie;
+  }
+  return config;
+});
 
 api_essentials.interceptors.response.use(
-  (response) => response,
+  async (response) => {
+    const setCookie = response.headers?.['set-cookie'] || response.headers?.['Set-Cookie'];
+    if (setCookie) {
+      const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+      const sessionCookie = cookieHeader.split(';')[0];
+      if (sessionCookie) {
+        await AsyncStorage.setItem(SESSION_COOKIE_KEY, sessionCookie);
+      }
+    }
+    return response;
+  },
   (error) => {
     if (__DEV__) {
       console.log('API error:', error?.message);
@@ -81,6 +93,16 @@ export const addToCart = async (product) => {
 export const fetchBlogs = async () => {
   const { data } = await api_essentials.get('/blog');
   return Array.isArray(data) ? data : data?.blogs || data?.posts || [];
+};
+
+export const fetchVets = async () => {
+  const { data } = await api_essentials.get('/vet');
+  const vets = Array.isArray(data) ? data : data?.vets || [];
+
+  return vets.map((vet) => ({
+    ...vet,
+    specialty: vet.specialty || vet.post,
+  }));
 };
 
 export const fetchBlogById = async (blogId) => {

@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }) {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login, checkAuthStatus } = useAuth();
+  const { login } = useAuth();
 
   const handleInput = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -67,23 +67,24 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       const response = await api.post('/login', form);
+      const responseUser = response.data?.user
+        || response.data?.userData
+        || (response.data?._id ? response.data : null)
+        || (response.data?.userId ? {
+          _id: response.data.userId,
+          username: form.username,
+        } : null);
 
-      // If your backend returns a token in the response body, this will
-      // persist it and mark the user as authenticated. If it currently
-      // only sets a session cookie, that part needs a backend change
-      // (issue a JWT alongside the cookie) for mobile login to work.
       await login({
-        token: response.data?.token,
-        user: response.data?.user,
+        user: responseUser,
         userType: response.data?.userType,
       });
-      await checkAuthStatus();
 
       navigation?.navigate?.('Home');
     } catch (err) {
       Alert.alert(
         'Login failed',
-        err.response?.data?.error || err.response?.data?.message || 'Login failed'
+        err.response?.data?.error || err.response?.data?.message || err.message || 'Login failed'
       );
     } finally {
       setLoading(false);

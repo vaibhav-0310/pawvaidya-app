@@ -13,6 +13,9 @@ import LoginScreen from './src/screens/LoginScreen';
 import AccountScreen from './src/screens/AccountScreen';
 import SectionScreen from './src/screens/SectionScreen';
 import BlogScreen from './src/screens/BlogScreen';
+import VetScreen from './src/screens/VetScreen';
+import VetChatScreen from './src/screens/VetChatScreen';
+import VetCallScreen from './src/screens/VetCallScreen';
 import BlogDetailScreen from './src/screens/BlogDetailScreen';
 import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import { AuthProvider } from './src/context/AuthContext';
@@ -26,6 +29,8 @@ export type RootStackParamList = {
   Account: undefined;
   Blog: undefined;
   Vet: undefined;
+  VetChat: { vet?: Record<string, unknown> };
+  VetCall: { vet?: Record<string, unknown> };
   Phr: undefined;
   Parser: undefined;
   BlogDetail: { blogId: string };
@@ -56,7 +61,9 @@ export default function App() {
             <Stack.Screen name="Blog" component={BlogScreen} />
             <Stack.Screen name="BlogDetail" component={BlogDetailScreen} />
             <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-            <Stack.Screen name="Vet" component={SectionScreen} initialParams={{ title: 'Consult a Vet' }} />
+            <Stack.Screen name="Vet" component={VetScreen} />
+            <Stack.Screen name="VetChat" component={VetChatScreen} />
+            <Stack.Screen name="VetCall" component={VetCallScreen} />
             <Stack.Screen name="Phr" component={SectionScreen} initialParams={{ title: 'Patient PHR' }} />
             <Stack.Screen name="Parser" component={SectionScreen} initialParams={{ title: 'Q&A' }} />
           </Stack.Navigator>
