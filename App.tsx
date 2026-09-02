@@ -10,6 +10,7 @@ import MarketplaceScreen from './src/screens/MarketplaceScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import CartScreen from './src/screens/CartScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import SignupScreen from './src/screens/SignupScreen';
 import AccountScreen from './src/screens/AccountScreen';
 import SectionScreen from './src/screens/SectionScreen';
 import BlogScreen from './src/screens/BlogScreen';
@@ -30,6 +31,7 @@ export type RootStackParamList = {
   Marketplace: undefined;
   Cart: undefined;
   Login: undefined;
+  Signup: undefined;
   Account: undefined;
   Blog: undefined;
   Vet: undefined;
@@ -62,6 +64,7 @@ export default function App() {
             <Stack.Screen name="Marketplace" component={MarketplaceScreen} />
             <Stack.Screen name="Cart" component={CartScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="Account" component={AccountScreen} />
             <Stack.Screen name="Blog" component={BlogScreen} />
             <Stack.Screen name="BlogDetail" component={BlogDetailScreen} />

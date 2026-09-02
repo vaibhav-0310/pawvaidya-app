@@ -57,7 +57,16 @@ export function AuthProvider({ children }) {
     } catch (err) {
       // ignore network errors on logout — clear local state regardless
     } finally {
-      await AsyncStorage.multiRemove([SESSION_COOKIE_KEY, AUTH_USER_KEY, AUTH_TYPE_KEY]);
+      // Storage cleanup must not prevent the in-memory logout from completing.
+      try {
+        await AsyncStorage.multiRemove([SESSION_COOKIE_KEY, AUTH_USER_KEY, AUTH_TYPE_KEY]);
+      } catch (err) {
+        await Promise.all([
+          AsyncStorage.removeItem(SESSION_COOKIE_KEY),
+          AsyncStorage.removeItem(AUTH_USER_KEY),
+          AsyncStorage.removeItem(AUTH_TYPE_KEY),
+        ].map((operation) => operation.catch(() => undefined)));
+      }
       setUser(null);
       setUserType(null);
       setIsAuthenticated(false);

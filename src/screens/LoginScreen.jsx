@@ -112,15 +112,15 @@ export default function LoginScreen({ navigation }) {
             </Text>
           </View>
 
-          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
+          {/* <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
             <Text style={styles.googleButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
-          <View style={styles.orRow}>
+          {/* <View style={styles.orRow}>
             <View style={styles.hr} />
             <Text style={styles.orText}>OR</Text>
             <View style={styles.hr} />
-          </View>
+          </View> */}
 
           <View style={styles.form}>
             <TextInput

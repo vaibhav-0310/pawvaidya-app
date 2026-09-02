@@ -19,6 +19,13 @@ export default function AccountScreen({ navigation }) {
     try {
       await logout();
       navigation?.reset?.({ index: 0, routes: [{ name: 'Login' }] });
+    } catch (err) {
+      if (__DEV__) {
+        console.log('Logout failed:', err?.message || err);
+      }
+      // Even if logout() partially failed (e.g. server call errored),
+      // still kick the user back to Login so they're not stuck.
+      navigation?.reset?.({ index: 0, routes: [{ name: 'Login' }] });
     } finally {
       setLoggingOut(false);
     }
@@ -72,6 +79,9 @@ export default function AccountScreen({ navigation }) {
             <TouchableOpacity style={styles.action} onPress={() => navigation?.navigate?.('Login')}>
               <LogIn size={20} color={colors.buttonText} />
               <Text style={styles.actionText}>Log in</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryAction} onPress={() => navigation?.navigate?.('Signup')}>
+              <Text style={styles.secondaryActionText}>Create an account</Text>
             </TouchableOpacity>
           </>
         )}
