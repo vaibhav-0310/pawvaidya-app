@@ -146,7 +146,7 @@ export default function VetChatScreen({ navigation, route }) {
           <Text style={styles.headerStatus}>{chatError || (connected ? 'Online now' : connectionError || 'Connecting...')}</Text>
         </View>
         <TouchableOpacity
-          onPress={() => navigation.navigate('VetCall', { vet })}
+          onPress={() => navigation.navigate('VetCall', { vet, chatId })}
           style={styles.videoButton}
           accessibilityRole="button"
         >
@@ -154,19 +154,20 @@ export default function VetChatScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        ref={listRef}
-        data={messages}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-      />
-
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardArea}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={10}
       >
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+        />
+
         <View style={styles.inputRow}>
           <TextInput
             value={input}
@@ -186,6 +187,7 @@ export default function VetChatScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
+  keyboardArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
