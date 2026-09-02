@@ -9,13 +9,49 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  Pressable,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Search, X } from 'lucide-react-native';
 import colors from '../theme/colors';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 import ProductCard from '../components/ProductCard';
 import { fetchProducts, addToCart } from '../services/api_essentials';
+
+function MarketplaceListHeader({ searchQuery, setSearchQuery, error, hasResults, onClearSearch }) {
+  return (
+    <View style={styles.headerContent}>
+      <Text style={styles.kicker}>PAWVAIDYA MARKETPLACE</Text>
+      <Text style={styles.title}>Everything your pet needs.</Text>
+      <Text style={styles.subtitle}>Thoughtfully selected essentials for healthier, happier pets.</Text>
+
+      <View style={styles.searchBar}>
+        <Search size={20} color={colors.textMuted} />
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search essentials"
+          placeholderTextColor={colors.textMuted}
+          style={styles.searchInput}
+          returnKeyType="search"
+          accessibilityLabel="Search essentials"
+        />
+        {searchQuery ? (
+          <Pressable onPress={onClearSearch} accessibilityLabel="Clear search">
+            <X size={20} color={colors.textSecondary} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {searchQuery.trim() && !hasResults && !error ? (
+        <Text style={styles.noResultsText}>No essentials match “{searchQuery.trim()}”.</Text>
+      ) : null}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
+  );
+}
 
 export default function MarketplaceScreen({ navigation }) {
   const [products, setProducts] = useState([]);
@@ -23,6 +59,7 @@ export default function MarketplaceScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [addingId, setAddingId] = useState(null);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadProducts = useCallback(async (isRefresh = false) => {
     try {
@@ -59,23 +96,15 @@ export default function MarketplaceScreen({ navigation }) {
     }
   };
 
-  const ListHeader = () => (
-    <View style={styles.headerContent}>
-      <View style={styles.tagRow}>
-        <View style={styles.dot} />
-        <Text style={styles.tagText}>Marketpet Essentials</Text>
-      </View>
-
-      <Text style={styles.heroText}>
-        From our{'\n'}hearts to{'\n'}
-        <Text style={styles.heroUnderline}>your pets</Text>
-      </Text>
-
-      <Text style={styles.subText}>Because your pets deserve the best.</Text>
-
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-    </View>
-  );
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredProducts = products.filter((product) => {
+    if (!normalizedQuery) return true;
+    return [product.name, product.suitableFor, product.description]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(normalizedQuery);
+  });
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -87,7 +116,7 @@ export default function MarketplaceScreen({ navigation }) {
         </View>
       ) : (
         <FlatList
-          data={products}
+          data={filteredProducts}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <ProductCard
@@ -97,10 +126,25 @@ export default function MarketplaceScreen({ navigation }) {
               adding={addingId === item._id}
             />
           )}
-          ListHeaderComponent={ListHeader}
+          ListHeaderComponent={
+            <MarketplaceListHeader
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              error={error}
+              hasResults={filteredProducts.length > 0}
+              onClearSearch={() => setSearchQuery('')}
+            />
+          }
+          ListEmptyComponent={
+            !error && !normalizedQuery ? <Text style={styles.emptyText}>No essentials available right now.</Text> : null
+          }
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.primaryAccent}
+            />
           }
         />
       )}
@@ -120,44 +164,60 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   listContent: {
-    paddingBottom: 0,
-  },
-  headerContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
     paddingBottom: 20,
   },
-  tagRow: {
+  headerContent: {
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 18,
+  },
+  kicker: {
+    color: colors.accentPink,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  title: {
+    color: colors.textPrimary,
+    fontSize: 30,
+    lineHeight: 35,
+    fontWeight: '800',
+    marginTop: 8,
+  },
+  subtitle: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    marginTop: 10,
+  },
+  searchBar: {
+    minHeight: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    backgroundColor: colors.cardBg,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    marginTop: 20,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.accentPink,
-    marginRight: 8,
-  },
-  tagText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.textSecondary,
-  },
-  heroText: {
-    fontSize: 44,
-    fontWeight: '800',
+  searchInput: {
+    flex: 1,
+    minHeight: 48,
     color: colors.textPrimary,
-    lineHeight: 50,
+    fontSize: 15,
+    marginLeft: 10,
+    paddingVertical: 0,
   },
-  heroUnderline: {
-    textDecorationLine: 'underline',
-    textDecorationColor: colors.accentPink,
-  },
-  subText: {
-    fontSize: 16,
+  noResultsText: {
     color: colors.textSecondary,
-    marginTop: 16,
+    fontSize: 13,
+    marginTop: 12,
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    textAlign: 'center',
+    paddingVertical: 40,
   },
   errorText: {
     marginTop: 12,
