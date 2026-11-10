@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 import { io } from 'socket.io-client';
 import { ArrowLeft, Send, Video } from 'lucide-react-native';
 import colors from '../theme/colors';
@@ -45,6 +46,23 @@ export default function VetChatScreen({ navigation, route }) {
     });
 
     socketRef.current = socket;
+
+    const setupNotifications = async () => {
+      await notifee.requestPermission();
+
+      if (Platform.OS === 'android') {
+        await notifee.createChannel({
+          id: 'vet-chat',
+          name: 'Vet chat',
+          importance: AndroidImportance.HIGH,
+          sound: 'default',
+        });
+      }
+    };
+
+    setupNotifications().catch(() => {
+      // Notification permission is optional and must not prevent chat loading.
+    });
 
     const loadChat = async () => {
       if (initializing) return;
@@ -94,6 +112,18 @@ export default function VetChatScreen({ navigation, route }) {
           timestamp,
         },
       ]);
+
+      if (senderType !== currentUser.type) {
+        notifee.displayNotification({
+          title: vet.name || 'New message from your HCP',
+          body: content,
+          android: {
+            channelId: 'vet-chat',
+            pressAction: { id: 'default' },
+          },
+          ios: { sound: 'default' },
+        }).catch(() => {});
+      }
     });
 
     socket.on('error', (message) => setChatError(message || 'Message could not be sent.'));
